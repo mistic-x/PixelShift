@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="meta-title">PixelShift — Free Online File Converter</title>
+    <style>
+        :root { --main-color: #ff3366; --bg-dark: #121212; --card-bg: #1e1e1e; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background-color: var(--bg-dark); color: #ffffff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .ad-slot { width: 100%; max-width: 728px; height: 90px; background: #1a1a1a; margin: 20px 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #333; color: #444; font-size: 12px; }
+        .header { text-align: center; padding: 40px 20px; }
+        h1 { font-size: 42px; margin: 0; background: linear-gradient(45deg, #ff3366, #ff6688); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #888; font-size: 18px; margin-top: 10px; }
+        .converter-card { background-color: var(--card-bg); padding: 40px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 90%; max-width: 600px; border: 1px solid #333; z-index: 10; }
+        .file-upload { border: 2px dashed var(--main-color); padding: 50px 20px; border-radius: 16px; cursor: pointer; background-color: #161616; transition: 0.3s; margin-bottom: 25px; position: relative; }
+        .file-upload.dragover { background-color: #25151a; border-color: #00cc66; transform: scale(1.01); }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; }
+        select, button { padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 600; }
+        select { flex: 1; background: #2a2a2a; color: white; border: 1px solid #444; outline: none; cursor: pointer; }
+        button { flex: 1; background: var(--main-color); color: white; border: none; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #ff1a55; box-shadow: 0 5px 15px rgba(255, 51, 102, 0.3); }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 90%; max-width: 900px; margin: 50px 0; }
+        .feature-item { text-align: center; padding: 20px; background: #1a1a1a; border-radius: 15px; }
+        .feature-item h3 { color: var(--main-color); margin-bottom: 10px; }
+        .feature-item p { color: #888; font-size: 14px; }
+        .seo-content { max-width: 800px; width: 90%; color: #777; line-height: 1.6; margin-bottom: 50px; text-align: center; }
+        .hidden { display: none !important; }
+        #download-link { display: block; background: #00cc66; color: white; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+        #download-link:hover { background-color: #00b359; }
+        footer { padding: 30px; color: #444; font-size: 13px; text-align: center; border-top: 1px solid #222; width: 100%; margin-top: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="ad-slot">ADVERTISEMENT (728x90)</div>
+
+    <div class="header">
+        <h1 id="t-h1">PixelShift</h1>
+        <p class="subtitle" id="t-subtitle">Fast and Secure Media Converter</p>
+    </div>
+
+    <div class="converter-card">
+        <div class="file-upload" id="drop-zone">
+            <p id="file-name" style="font-size: 18px;">✨ Drop your file here or click to browse</p>
+            <p id="file-size-info" style="color: #666; margin-top: 10px;" class="hidden"></p>
+            <input type="file" id="file-input" class="hidden" accept="image/*,video/*,audio/*">
+        </div>
+
+        <div class="controls">
+            <select id="format-select">
+                <option value="" id="t-select-placeholder">Convert to...</option>
+            </select>
+            <button id="convert-btn">Start Conversion</button>
+        </div>
+
+        <div id="loading" class="hidden">🔄 Working on your file...</div>
+        <div id="result" class="hidden">
+            <a id="download-link" href="#" download>Download Result</a>
+        </div>
+        <div id="error" class="hidden" style="color: #ff3366; margin-top: 10px; padding: 10px; background: #300; border-radius: 8px;"></div>
+    </div>
+
+    <div class="ad-slot">ADVERTISEMENT (728x90)</div>
+
+    <div class="features" id="features-list"></div>
+
+    <div class="seo-content" id="t-seo"></div>
+
+    <footer>
+        &copy; 2026 justsameguy_. All rights reserved.
+    </footer>
+
+    <script>
+        const translations = {
+            uk: {
+                title: "PixelShift — Безкоштовний Онлайн Конвертер Файлів",
+                subtitle: "Ваш швейцарський ніж для роботи з медіафайлами",
+                dropzone: "✨ Виберіть файл або перетягніть його сюди",
+                select: "Куда конвертуємо?",
+                btn: "Почати магію",
+                loading: "🔄 Наводимо блиск у пікселях...",
+                download: "📥 Завантажити готовий файл",
+                f1_h: "⚡ Блискавично", f1_p: "Конвертуйте медіа за лічені секунди.",
+                f2_h: "🔒 Приватно", f2_p: "Файли не зберігаються на диску. Тільки пам'ять.",
+                f3_h: "💎 Якісно", f3_p: "Зберігаємо максимум деталей при зміні форматів.",
+                seo: "<h2>Чому PixelShift — найкращий вибір?</h2><p>PixelShift — це потужний онлайн-інструмент, який замінює десятки вузькоспеціалізованих сервісів. Більше не потрібно шукати, як конвертувати MP4 в MP3 або WEBP в PNG. Наш алгоритм автоматично підбирає найкращі налаштування для кожного файлу. Ми підтримуємо всі популярні формати зображень, відео та аудіо. Пользуйтесь сервісом безкоштовно, без реєстрації та обмежень.</p>"
+            },
+            en: {
+                title: "PixelShift — Free Online File Converter",
+                subtitle: "Your swiss army knife for media files",
+                dropzone: "✨ Choose a file or drag it here",
+                select: "Convert to?",
+                btn: "Start Magic",
+                loading: "🔄 Polishing pixels...",
+                download: "📥 Download finished file",
+                f1_h: "⚡ Fast", f1_p: "Convert media in a matter of seconds.",
+                f2_h: "🔒 Private", f2_p: "Files are not stored on disk. Memory only.",
+                f3_h: "💎 Quality", f3_p: "Maximum details preserved during conversion.",
+                seo: "<h2>Why PixelShift is the best choice?</h2><p>PixelShift is a powerful online tool that replaces dozens of niche services. No more searching for how to convert MP4 to MP3 or WEBP to PNG. Our algorithm automatically selects the best settings for each file. We support all popular image, video, and audio formats. Use the service for free, with no registration or limits on the number of files.</p>"
+            },
+            de: {
+                title: "PixelShift — Kostenloser Online-Dateikonverter",
+                subtitle: "Ihr Schweizer Taschenmesser für Mediendateien",
+                dropzone: "✨ Datei auswählen oder hierher ziehen",
+                select: "Konvertieren in?",
+                btn: "Magie starten",
+                loading: "🔄 Pixel werden poliert...",
+                download: "📥 Fertige Datei herunterladen",
+                f1_h: "⚡ Schnell", f1_p: "Konvertieren Sie Medien in Sekunden.",
+                f2_h: "🔒 Privat", f2_p: "Dateien werden nicht gespeichert. Nur Arbeitsspeicher.",
+                f3_h: "💎 Qualität", f3_p: "Maximale Details bleiben erhalten.",
+                seo: "<h2>Warum PixelShift wählen?</h2><p>PixelShift ist ein leistungsstarkes Online-Tool. Konvertieren Sie MP4 in MP3 oder WEBP in PNG ohne Aufwand. Wir unterstützen alle gängigen Formate kostenlos und ohne Registrierung.</p>"
+            },
+            fr: {
+                title: "PixelShift — Convertisseur en ligne gratuit",
+                subtitle: "Votre couteau suisse multimédia",
+                dropzone: "✨ Choisissez un fichier ou faites-le glisser",
+                select: "Convertir en ?",
+                btn: "Lancer la magie",
+                loading: "🔄 Polissage...",
+                download: "📥 Télécharger",
+                f1_h: "⚡ Rapide", f1_p: "Convertissez vos médias en quelques secondes.",
+                f2_h: "🔒 Privé", f2_p: "Les fichiers ne sont pas stockés. Mémoire uniquement.",
+                f3_h: "💎 Qualité", f3_p: "Détails maximum préservés.",
+                seo: "<h2>Pourquoi choisir PixelShift ?</h2><p>PixelShift est un outil puissant pour convertir MP4 en MP3, WEBP en PNG et plus encore.</p>"
+            },
+            es: {
+                title: "PixelShift — Convertidor de archivos gratuito",
+                subtitle: "Tu navaja suiza multimedia",
+                dropzone: "✨ Elige un archivo o arrástralo",
+                select: "¿Convertir a?",
+                btn: "Empezar Magia",
+                loading: "🔄 Puliendo...",
+                download: "📥 Descargar",
+                f1_h: "⚡ Rápido", f1_p: "Convierte imágenes, videos y audio en segundos.",
+                f2_h: "🔒 Privado", f2_p: "Tus archivos no se guardan. Solo memoria.",
+                f3_h: "💎 Calidad", f3_p: "Máxima calidad garantizada.",
+                seo: "<h2>¿Por qué PixelShift?</h2><p>Herramienta potente para convertir MP4 a MP3 o WEBP a PNG gratis.</p>"
+            },
+            pt: {
+                title: "PixelShift — Conversor online gratuito",
+                subtitle: "Sua faca suíça para mídia",
+                dropzone: "✨ Escolha um arquivo ou arraste-o",
+                select: "Converter para?",
+                btn: "Iniciar Magia",
+                loading: "🔄 Polindo...",
+                download: "📥 Baixar arquivo",
+                f1_h: "⚡ Rápido", f1_p: "Converta mídia em segundos.",
+                f2_h: "🔒 Privado", f2_p: "Arquivos não são salvos.",
+                f3_h: "💎 Qualidade", f3_p: "Detalhes preservados.",
+                seo: "<h2>Por que o PixelShift?</h2><p>Conversão de MP4 para MP3 ou WEBP para PNG gratuitamente.</p>"
+            },
+            tr: {
+                title: "PixelShift — Ücretsiz Dosya Dönüştürücü",
+                subtitle: "Medya dosyaları için İsviçre çakınız",
+                dropzone: "✨ Dosya seçin veya sürükleyin",
+                select: "Şuna dönüştür?",
+                btn: "Sihri Başlat",
+                loading: "🔄 İşleniyor...",
+                download: "📥 Dosyayı indir",
+                f1_h: "⚡ Hızlı", f1_p: "Saniyeler içinde dönüştürün.",
+                f2_h: "🔒 Gizli", f2_p: "Dosyalar saklanmaz.",
+                f3_h: "💎 Kaliteli", f3_p: "Maksimum detay.",
+                seo: "<h2>Neden PixelShift?</h2><p>MP4'ü MP3'e veya WEBP'yi PNG'ye dönüştürmek için güçlü araç.</p>"
+            },
+            zh: {
+                title: "PixelShift — 免费在线文件转换器",
+                subtitle: "您的媒体文件多功能工具",
+                dropzone: "✨ 选择文件或拖放到这里",
+                select: "转换为？",
+                btn: "开始转换",
+                loading: "🔄 正在处理...",
+                download: "📥 下载文件",
+                f1_h: "⚡ 快速", f1_p: "几秒钟内完成转换。",
+                f2_h: "🔒 安全", f2_p: "文件不落地，仅在内存中处理。",
+                f3_h: "💎 高质量", f3_p: "保留最大细节。",
+                seo: "<h2>为什么选择 PixelShift？</h2><p>功能强大的在线工具，支持各类媒体格式转换。</p>"
+            },
+            ja: {
+                title: "PixelShift — 無料オンラインコンバーター",
+                subtitle: "メディア用万能ツール",
+                dropzone: "✨ ファイルを選択またはドラッグ",
+                select: "変換先は？",
+                btn: "変換開始",
+                loading: "🔄 処理中...",
+                download: "📥 ダウンロード",
+                f1_h: "⚡ 高速", f1_p: "数秒で変換完了。",
+                f2_h: "🔒 安全", f2_p: "メモリ内処理。",
+                f3_h: "💎 高品質", f3_p: "細部を保持。",
+                seo: "<h2>PixelShift が選ばれる理由</h2><p>無料で制限なしの強力なオンライン変換ツール。</p>"
+            }
+        };
+
+        // --- ЛОКАЛІЗАЦІЯ ---
+        function applyLanguage() {
+            let userLang = navigator.language.substring(0, 2);
+            // Англійська за замовчуванням, якщо мови немає в списку або це не українська
+            if (!translations[userLang]) userLang = 'en';
+            
+            const t = translations[userLang];
+            document.title = t.title;
+            document.getElementById('t-subtitle').textContent = t.subtitle;
+            document.getElementById('file-name').textContent = t.dropzone;
+            document.getElementById('t-select-placeholder').textContent = t.select;
+            document.getElementById('convert-btn').textContent = t.btn;
+            document.getElementById('loading').textContent = t.loading;
+            document.getElementById('download-link').textContent = t.download;
+            document.getElementById('t-seo').innerHTML = t.seo;
+            document.getElementById('features-list').innerHTML = `
+                <div class="feature-item"><h3>${t.f1_h}</h3><p>${t.f1_p}</p></div>
+                <div class="feature-item"><h3>${t.f2_h}</h3><p>${t.f2_p}</p></div>
+                <div class="feature-item"><h3>${t.f3_h}</h3><p>${t.f3_p}</p></div>`;
+        }
+        applyLanguage();
+
+        // --- ЛОГІКА КОНВЕРТАЦІЇ (Backend Interaction) ---
+        const fileInput = document.getElementById('file-input');
+        const dropZone = document.getElementById('drop-zone');
+        const fileNameDisplay = document.getElementById('file-name');
+        const fileSizeInfo = document.getElementById('file-size-info');
+        const convertBtn = document.getElementById('convert-btn');
+        const formatSelect = document.getElementById('format-select');
+        const loadingDiv = document.getElementById('loading');
+        const resultDiv = document.getElementById('result');
+        const downloadLink = document.getElementById('download-link');
+        const errorDiv = document.getElementById('error');
+
+        // Drag & Drop
+        ['dragover', 'dragleave', 'drop'].forEach(eName => {
+            dropZone.addEventListener(eName, e => { e.preventDefault(); e.stopPropagation(); });
+        });
+        dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', e => {
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => { if(fileInput.files[0]) handleFileSelect(fileInput.files[0]); });
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + ['Bytes', 'KB', 'MB', 'GB'][i];
+        }
+
+        async function handleFileSelect(file) {
+            const ext = file.name.split('.').pop().toUpperCase();
+            fileNameDisplay.textContent = `📄 ${file.name}`;
+            fileNameDisplay.style.color = "#00cc66";
+            fileSizeInfo.textContent = formatBytes(file.size);
+            fileSizeInfo.classList.remove('hidden');
+            resultDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+
+            const res = await fetch(`/api/get-allowed-formats?filename=${encodeURIComponent(file.name)}`);
+            const data = await res.json();
+            formatSelect.innerHTML = "";
+            data.formats.forEach(fmt => {
+                if (fmt !== ext && !(ext === "JPEG" && fmt === "JPG")) {
+                    const opt = document.createElement('option');
+                    opt.value = fmt; opt.textContent = `to ${fmt}`;
+                    formatSelect.appendChild(opt);
+                }
+            });
+        }
+
+        convertBtn.addEventListener('click', async () => {
+            if (!fileInput.files[0] || !formatSelect.value) return alert("Select file and format!");
+            
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            formData.append("target_format", formatSelect.value);
+
+            loadingDiv.classList.remove('hidden');
+            resultDiv.classList.add('hidden');
+            errorDiv.classList.add('hidden');
+            convertBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/convert', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error("Conversion failed");
+                const blob = await response.blob();
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = `pixelshift_${fileInput.files[0].name.split('.')[0]}.${formatSelect.value.toLowerCase()}`;
+                resultDiv.classList.remove('hidden');
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.classList.remove('hidden');
+            } finally {
+                loadingDiv.classList.add('hidden');
+                convertBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
