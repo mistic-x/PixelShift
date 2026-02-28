@@ -7,7 +7,7 @@
     <style>
         :root { --main-color: #ff3366; --bg-dark: #121212; --card-bg: #1e1e1e; }
         body { font-family: 'Inter', -apple-system, sans-serif; background-color: var(--bg-dark); color: #ffffff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .ad-slot { width: 100%; max-width: 728px; height: 90px; background: #1a1a1a; margin: 20px 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #333; color: #444; font-size: 12px; }
+        .ad-slot { width: 100%; max-width: 728px; min-height: 90px; background: #1a1a1a; margin: 20px 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #333; overflow: hidden; }
         .header { text-align: center; padding: 40px 20px; }
         h1 { font-size: 42px; margin: 0; background: linear-gradient(45deg, #ff3366, #ff6688); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .subtitle { color: #888; font-size: 18px; margin-top: 10px; }
@@ -33,7 +33,18 @@
 </head>
 <body>
 
-    <div class="ad-slot">ADVERTISEMENT (728x90)</div>
+    <div class="ad-slot">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : '8fe027167c4edbd1eac7654f414911d4',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="https://www.highperformanceformat.com/8fe027167c4edbd1eac7654f414911d4/invoke.js"></script>
+    </div>
 
     <div class="header">
         <h1 id="t-h1">PixelShift</h1>
@@ -61,10 +72,20 @@
         <div id="error" class="hidden" style="color: #ff3366; margin-top: 10px; padding: 10px; background: #300; border-radius: 8px;"></div>
     </div>
 
-    <div class="ad-slot">ADVERTISEMENT (728x90)</div>
+    <div class="ad-slot">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : '8fe027167c4edbd1eac7654f414911d4',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="https://www.highperformanceformat.com/8fe027167c4edbd1eac7654f414911d4/invoke.js"></script>
+    </div>
 
     <div class="features" id="features-list"></div>
-
     <div class="seo-content" id="t-seo"></div>
 
     <footer>
@@ -72,19 +93,20 @@
     </footer>
 
     <script>
+        // --- ТРАНСЛЕЙТ СИСТЕМА (Твоя локалізація) ---
         const translations = {
             uk: {
                 title: "PixelShift — Безкоштовний Онлайн Конвертер Файлів",
                 subtitle: "Ваш швейцарський ніж для роботи з медіафайлами",
                 dropzone: "✨ Виберіть файл або перетягніть його сюди",
-                select: "Куда конвертуємо?",
+                select: "Куди конвертуємо?",
                 btn: "Почати магію",
                 loading: "🔄 Наводимо блиск у пікселях...",
                 download: "📥 Завантажити готовий файл",
                 f1_h: "⚡ Блискавично", f1_p: "Конвертуйте медіа за лічені секунди.",
                 f2_h: "🔒 Приватно", f2_p: "Файли не зберігаються на диску. Тільки пам'ять.",
                 f3_h: "💎 Якісно", f3_p: "Зберігаємо максимум деталей при зміні форматів.",
-                seo: "<h2>Чому PixelShift — найкращий вибір?</h2><p>PixelShift — це потужний онлайн-інструмент, який замінює десятки вузькоспеціалізованих сервісів. Більше не потрібно шукати, як конвертувати MP4 в MP3 або WEBP в PNG. Наш алгоритм автоматично підбирає найкращі налаштування для кожного файлу. Ми підтримуємо всі популярні формати зображень, відео та аудіо. Пользуйтесь сервісом безкоштовно, без реєстрації та обмежень.</p>"
+                seo: "<h2>Чому PixelShift — найкращий вибір?</h2><p>PixelShift — це потужний онлайн-інструмент, який замінює десятки вузькоспеціалізованих сервісів. Більше не потрібно шукати, як конвертувати MP4 в MP3 або WEBP в PNG. Наш алгоритм автоматично підбирає найкращі налаштування для кожного файлу. Ми підтримуємо всі популярні формати зображень, відео та аудіо. Користуйтеся сервісом безкоштовно, без реєстрації та обмежень.</p>"
             },
             en: {
                 title: "PixelShift — Free Online File Converter",
@@ -98,7 +120,7 @@
                 f2_h: "🔒 Private", f2_p: "Files are not stored on disk. Memory only.",
                 f3_h: "💎 Quality", f3_p: "Maximum details preserved during conversion.",
                 seo: "<h2>Why PixelShift is the best choice?</h2><p>PixelShift is a powerful online tool that replaces dozens of niche services. No more searching for how to convert MP4 to MP3 or WEBP to PNG. Our algorithm automatically selects the best settings for each file. We support all popular image, video, and audio formats. Use the service for free, with no registration or limits on the number of files.</p>"
-            },
+            }
             de: {
                 title: "PixelShift — Kostenloser Online-Dateikonverter",
                 subtitle: "Ihr Schweizer Taschenmesser für Mediendateien",
@@ -190,14 +212,12 @@
                 f3_h: "💎 高品質", f3_p: "細部を保持。",
                 seo: "<h2>PixelShift が選ばれる理由</h2><p>無料で制限なしの強力なオンライン変換ツール。</p>"
             }
+            // ... (інші мови de, fr, es тощо залишаються в пам'яті скрипта)
         };
 
-        // --- ЛОКАЛІЗАЦІЯ ---
         function applyLanguage() {
             let userLang = navigator.language.substring(0, 2);
-            // Англійська за замовчуванням, якщо мови немає в списку або це не українська
             if (!translations[userLang]) userLang = 'en';
-            
             const t = translations[userLang];
             document.title = t.title;
             document.getElementById('t-subtitle').textContent = t.subtitle;
@@ -214,7 +234,7 @@
         }
         applyLanguage();
 
-        // --- ЛОГІКА КОНВЕРТАЦІЇ (Backend Interaction) ---
+        // --- ЛОГІКА КОНВЕРТАЦІЇ ---
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
         const fileNameDisplay = document.getElementById('file-name');
@@ -226,7 +246,6 @@
         const downloadLink = document.getElementById('download-link');
         const errorDiv = document.getElementById('error');
 
-        // Drag & Drop
         ['dragover', 'dragleave', 'drop'].forEach(eName => {
             dropZone.addEventListener(eName, e => { e.preventDefault(); e.stopPropagation(); });
         });
@@ -271,7 +290,6 @@
 
         convertBtn.addEventListener('click', async () => {
             if (!fileInput.files[0] || !formatSelect.value) return alert("Select file and format!");
-            
             const formData = new FormData();
             formData.append("file", fileInput.files[0]);
             formData.append("target_format", formatSelect.value);
@@ -297,5 +315,8 @@
             }
         });
     </script>
+
+    <script src="https://pl28817385.effectivegatecpm.com/ff/5f/df/ff5fdfd8904e09738a1c8b73980c4030.js"></script>
+
 </body>
 </html>
