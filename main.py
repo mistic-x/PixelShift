@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, Response, PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
@@ -33,6 +33,30 @@ def get_file_category(filename: str):
 async def get_formats(filename: str):
     category = get_file_category(filename)
     return JSONResponse({"formats": CONVERSION_MAP.get(category, [])})
+
+
+# --- SEO: Robots.txt ---
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def get_robots_txt():
+    content = """User-agent: *
+Allow: /
+Sitemap: https://pixelshift-yz4a.onrender.com/sitemap.xml
+"""
+    return content
+
+# --- SEO: Sitemap.xml ---
+@app.get("/sitemap.xml")
+async def get_sitemap():
+    xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+   <url>
+      <loc>https://pixelshift-yz4a.onrender.com/</loc>
+      <lastmod>2026-03-01</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>1.0</priority>
+   </url>
+</urlset>"""
+    return Response(content=xml_content, media_type="application/xml")
 
 @app.post("/api/convert")
 async def convert_file(file: UploadFile = File(...), target_format: str = Form(...)):

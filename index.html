@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="meta-title">PixelShift — Free Online File Converter</title>
+    
+    <title id="meta-title">PixelShift — Free Online Video, Audio and Image Converter</title>
+    
+    <meta name="description" content="Free and secure online file converter. Quickly convert MP4 to MP3, WEBP to PNG, JPG to PDF. No registration, no limits, direct in-browser processing.">
+    <meta name="keywords" content="file converter, online converter, mp4 to mp3, webp to png, video converter, image converter">
+    <meta http-equiv="content-language" content="en">
+    
+    <link rel="canonical" href="https://pixelshift-yz4a.onrender.com/">
+    
+    <link rel="icon" href="favicon.png" type="image/png">
+    
+    <meta property="og:title" content="PixelShift — Universal Media Converter">
+    <meta property="og:description" content="Your swiss army knife for media files. Convert files fast, safely, and entirely online.">
+    <meta property="og:image" content="https://pixelshift-yz4a.onrender.com/favicon.ico">
+    <meta property="og:url" content="https://pixelshift-yz4a.onrender.com/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
     <style>
         :root { --main-color: #ff3366; --bg-dark: #121212; --card-bg: #1e1e1e; }
         body { font-family: 'Inter', -apple-system, sans-serif; background-color: var(--bg-dark); color: #ffffff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
@@ -29,9 +46,50 @@
         #download-link { display: block; background: #00cc66; color: white; padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 20px; transition: 0.3s; text-align: center; }
         #download-link:hover { background-color: #00b359; }
         footer { padding: 30px; color: #444; font-size: 13px; text-align: center; border-top: 1px solid #222; width: 100%; margin-top: auto; }
+        /* Модальное окно AdBlock */
+        #adblock-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        #adblock-modal.hidden { display: none !important; }
+        .adblock-content {
+            background: var(--card-bg); padding: 40px; border-radius: 20px;
+            max-width: 400px; width: 90%; text-align: center; position: relative;
+            border: 2px solid var(--main-color);
+            box-shadow: 0 10px 50px rgba(255, 51, 102, 0.3);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .adblock-close {
+            position: absolute; top: 10px; right: 15px; font-size: 28px;
+            color: #666; cursor: pointer; transition: 0.3s; line-height: 1;
+        }
+        .adblock-close:hover { color: #fff; transform: scale(1.1); }
+        .adblock-content h2 { color: white; margin-bottom: 15px; font-size: 24px; }
+        .adblock-content p { color: #aaa; font-size: 15px; line-height: 1.5; margin-bottom: 25px; }
+        .adblock-btn {
+            display: inline-block; background: var(--main-color); color: white;
+            padding: 12px 25px; border-radius: 10px; text-decoration: none; font-weight: bold;
+            margin-bottom: 15px; cursor: pointer; border: none; width: 100%; font-size: 16px;
+        }
+        .adblock-continue {
+            color: #666; font-size: 13px; text-decoration: underline; cursor: pointer; background: none; border: none;
+        }
+        .adblock-continue:hover { color: #888; }
     </style>
 </head>
 <body>
+    <div id="adblock-modal" class="hidden">
+        <div class="adblock-content">
+            <span class="adblock-close" id="adblock-close">&times;</span>
+            <h2 id="t-ab-title">Пожалуйста, отключите AdBlock 🥺</h2>
+            <p id="t-ab-text">Этот сайт живет и остается бесплатным благодаря рекламе. Поддержите автора!</p>
+            <button class="adblock-btn" onclick="location.reload()">Я отключил(а) рекламу 🚀</button>
+            <button class="adblock-continue" id="t-ab-continue">Продолжить с AdBlock</button>
+        </div>
+    </div>
 
     <div class="ad-slot">
         <script type="text/javascript">
@@ -81,45 +139,67 @@
     </footer>
 
     <script>
+        // --- ПОЛНЫЙ СЛОВАРЬ ПЕРЕВОДОВ ---
         const translations = {
+            ru: {
+                title: "PixelShift — Бесплатный Конвертер Файлов", subtitle: "Ваш швейцарский нож для медиа", dropzone: "✨ Выберите файл или перетащите его сюда", select: "Куда конвертируем?", btn: "Начать магию", loading: "🔄 Обрабатываем...", download: "📥 Скачать результат",
+                f1_h: "⚡ Молниеносно", f1_p: "Конвертируйте за секунды.", f2_h: "🔒 Приватно", f2_p: "Файлы не хранятся на диске.", f3_h: "💎 Качественно", f3_p: "Сохраняем максимум деталей.",
+                seo: "<h2>Почему PixelShift?</h2><p>Мощный бесплатный инструмент без ограничений.</p>",
+                ab_title: "Отключите AdBlock, пожалуйста 🥺", ab_text: "Этот сайт живет и остается бесплатным благодаря рекламе. Пожалуйста, добавьте нас в исключения, чтобы поддержать автора и развитие проекта!", ab_continue: "Продолжить с AdBlock"
+            },
             uk: {
-                title: "PixelShift — Безкоштовний Онлайн Конвертер Файлів",
-                subtitle: "Ваш швейцарський ніж для роботи з медіафайлами",
-                dropzone: "✨ Виберіть файл або перетягніть його сюди",
-                select: "Куди конвертуємо?",
-                btn: "Почати магію",
-                loading: "🔄 Наводимо блиск у пікселях...",
-                download: "📥 Завантажити готовий файл",
-                f1_h: "⚡ Блискавично", f1_p: "Конвертуйте медіа за лічені секунди.",
-                f2_h: "🔒 Приватно", f2_p: "Файли не зберігаються на диску. Тільки пам'ять.",
-                f3_h: "💎 Якісно", f3_p: "Зберігаємо максимум деталей при зміні форматів.",
-                seo: "<h2>Чому PixelShift — найкращий вибір?</h2><p>PixelShift — це потужний онлайн-інструмент, який замінює десятки вузькоспеціалізованих сервісів. Більше не потрібно шукати, як конвертувати MP4 в MP3 або WEBP в PNG. Наш алгоритм автоматично підбирає найкращі налаштування для кожного файлу. Ми підтримуємо всі популярні формати зображень, відео та аудіо. Користуйтеся сервісом безкоштовно, без реєстрації та обмежень на кількість файлів.</p>"
+                title: "PixelShift — Безкоштовний Конвертер Файлів", subtitle: "Ваш швейцарський ніж для медіа", dropzone: "✨ Виберіть файл або перетягніть його сюди", select: "Куди конвертуємо?", btn: "Почати магію", loading: "🔄 Обробляємо...", download: "📥 Завантажити результат",
+                f1_h: "⚡ Блискавично", f1_p: "Конвертуйте за секунди.", f2_h: "🔒 Приватно", f2_p: "Файли не зберігаються на диску.", f3_h: "💎 Якісно", f3_p: "Зберігаємо максимум деталей.",
+                seo: "<h2>Чому PixelShift?</h2><p>Потужний безкоштовний інструмент без обмежень.</p>",
+                ab_title: "Вимкніть AdBlock, будь ласка 🥺", ab_text: "Цей сайт живе та залишається безкоштовним завдяки рекламі. Будь ласка, додайте нас у винятки, щоб підтримати автора!", ab_continue: "Продовжити з AdBlock"
             },
             en: {
-                title: "PixelShift — Free Online File Converter",
-                subtitle: "Your swiss army knife for media files",
-                dropzone: "✨ Choose a file or drag it here",
-                select: "Convert to?",
-                btn: "Start Magic",
-                loading: "🔄 Polishing pixels...",
-                download: "📥 Download finished file",
-                f1_h: "⚡ Fast", f1_p: "Convert media in a matter of seconds.",
-                f2_h: "🔒 Private", f2_p: "Files are not stored on disk. Memory only.",
-                f3_h: "💎 Quality", f3_p: "Maximum details preserved during conversion.",
-                seo: "<h2>Why PixelShift is the best choice?</h2><p>PixelShift is a powerful online tool that replaces dozens of niche services. No more searching for how to convert MP4 to MP3 or WEBP to PNG. Our algorithm automatically selects the best settings for each file. We support all popular image, video, and audio formats. Use the service for free, with no registration or limits on the number of files.</p>"
+                title: "PixelShift — Free Online Converter", subtitle: "Your swiss army knife for media", dropzone: "✨ Choose a file or drag it here", select: "Convert to?", btn: "Start Magic", loading: "🔄 Processing...", download: "📥 Download Result",
+                f1_h: "⚡ Fast", f1_p: "Convert in seconds.", f2_h: "🔒 Private", f2_p: "Files are not stored.", f3_h: "💎 Quality", f3_p: "Maximum details preserved.",
+                seo: "<h2>Why PixelShift?</h2><p>Powerful free tool with no limits.</p>",
+                ab_title: "Please disable AdBlock 🥺", ab_text: "This site stays alive and free thanks to ads. Please whitelist us to support the author and keep the project going!", ab_continue: "Continue with AdBlock"
             },
-            de: { title: "PixelShift — Dateikonverter", subtitle: "Ihr Schweizer Taschenmesser", dropzone: "✨ Datei auswählen", select: "Konvertieren in?", btn: "Magie starten", loading: "🔄 Verarbeitung...", download: "📥 Herunterladen", f1_h: "⚡ Schnell", f1_p: "In Sekunden konvertieren.", f2_h: "🔒 Privat", f2_p: "Sicher im Speicher.", f3_h: "💎 Qualität", f3_p: "Beste Details.", seo: "<h2>Warum PixelShift?</h2><p>Kostenloses und leistungsstarkes Online-Tool.</p>" },
-            fr: { title: "PixelShift — Convertisseur", subtitle: "Votre couteau suisse", dropzone: "✨ Choisir un fichier", select: "Convertir en ?", btn: "Lancer la magie", loading: "🔄 Traitement...", download: "📥 Télécharger", f1_h: "⚡ Rapide", f1_p: "Conversion instantanée.", f2_h: "🔒 Privé", f2_p: "Mémoire uniquement.", f3_h: "💎 Qualité", f3_p: "Détails préservés.", seo: "<h2>Pourquoi PixelShift ?</h2><p>Outil en ligne gratuit et puissant.</p>" },
-            es: { title: "PixelShift — Convertidor", subtitle: "Tu navaja suiza", dropzone: "✨ Elige un archivo", select: "¿Convertir a?", btn: "Empezar", loading: "🔄 Procesando...", download: "📥 Descargar", f1_h: "⚡ Rápido", f1_p: "En segundos.", f2_h: "🔒 Privado", f2_p: "Memoria segura.", f3_h: "💎 Calidad", f3_p: "Máximo detalle.", seo: "<h2>¿Por qué PixelShift?</h2><p>Herramienta potente y gratuita.</p>" },
-            pt: { title: "PixelShift — Conversor", subtitle: "Sua faca suíça", dropzone: "✨ Escolher arquivo", select: "Converter para?", btn: "Iniciar", loading: "🔄 Processando...", download: "📥 Baixar", f1_h: "⚡ Rápido", f1_p: "Em segundos.", f2_h: "🔒 Privado", f2_p: "Apenas memória.", f3_h: "💎 Qualidade", f3_p: "Detalhes mantidos.", seo: "<h2>Por que o PixelShift?</h2><p>Conversor potente e grátis.</p>" },
-            tr: { title: "PixelShift — Dönüştürücü", subtitle: "İsviçre çakınız", dropzone: "✨ Dosya seç", select: "Dönüştür?", btn: "Başlat", loading: "🔄 İşleniyor...", download: "📥 İndir", f1_h: "⚡ Hızlı", f1_p: "Saniyeler içinde.", f2_h: "🔒 Gizli", f2_p: "Sadece bellek.", f3_h: "💎 Kalite", f3_p: "Maksimum detay.", seo: "<h2>Neden PixelShift?</h2><p>Ücretsiz ve güçlü araç.</p>" },
-            zh: { title: "PixelShift — 文件转换器", subtitle: "多功能工具", dropzone: "✨ 选择文件", select: "转换为？", btn: "开始转换", loading: "🔄 处理中...", download: "📥 下载", f1_h: "⚡ 快速", f1_p: "极速转换。", f2_h: "🔒 安全", f2_p: "内存处理。", f3_h: "💎 高质量", f3_p: "保留细节。", seo: "<h2>为什么选择 PixelShift？</h2><p>强大的免费在线工具。</p>" },
-            ja: { title: "PixelShift — コンバーター", subtitle: "万能ツール", dropzone: "✨ ファイルを選択", select: "変換先は？", btn: "開始", loading: "🔄 処理中...", download: "📥 ダウンロード", f1_h: "⚡ 高速", f1_p: "数秒で完了。", f2_h: "🔒 安全", f2_p: "メモリ処理。", f3_h: "💎 高品質", f3_p: "詳細を保持。", seo: "<h2>PixelShift が選ばれる理由</h2><p>無料で強力なツール。</p>" }
+            de: {
+                title: "PixelShift — Dateikonverter", subtitle: "Ihr Schweizer Taschenmesser", dropzone: "✨ Datei auswählen", select: "Konvertieren in?", btn: "Magie starten", loading: "🔄 Verarbeitung...", download: "📥 Herunterladen",
+                f1_h: "⚡ Schnell", f1_p: "In Sekunden konvertieren.", f2_h: "🔒 Privat", f2_p: "Sicher im Speicher.", f3_h: "💎 Qualität", f3_p: "Beste Details.", seo: "<h2>Warum PixelShift?</h2><p>Kostenloses und leistungsstarkes Online-Tool.</p>",
+                ab_title: "Bitte deaktiviere AdBlock 🥺", ab_text: "Diese Seite bleibt dank Werbung kostenlos. Bitte setze uns auf die Whitelist, um den Autor zu unterstützen!", ab_continue: "Mit AdBlock fortfahren"
+            },
+            fr: {
+                title: "PixelShift — Convertisseur", subtitle: "Votre couteau suisse", dropzone: "✨ Choisir un fichier", select: "Convertir en ?", btn: "Lancer la magie", loading: "🔄 Traitement...", download: "📥 Télécharger",
+                f1_h: "⚡ Rapide", f1_p: "Conversion instantanée.", f2_h: "🔒 Privé", f2_p: "Mémoire uniquement.", f3_h: "💎 Qualité", f3_p: "Détails préservés.", seo: "<h2>Pourquoi PixelShift ?</h2><p>Outil en ligne gratuit et puissant.</p>",
+                ab_title: "Veuillez désactiver AdBlock 🥺", ab_text: "Ce site reste gratuit grâce aux publicités. Merci de nous mettre sur liste blanche pour soutenir l'auteur !", ab_continue: "Continuer avec AdBlock"
+            },
+            es: {
+                title: "PixelShift — Convertidor", subtitle: "Tu navaja suiza", dropzone: "✨ Elige un archivo", select: "¿Convertir a?", btn: "Empezar", loading: "🔄 Procesando...", download: "📥 Descargar",
+                f1_h: "⚡ Rápido", f1_p: "En segundos.", f2_h: "🔒 Privado", f2_p: "Memoria segura.", f3_h: "💎 Calidad", f3_p: "Máximo detalle.", seo: "<h2>¿Por qué PixelShift?</h2><p>Herramienta potente y gratuita.</p>",
+                ab_title: "Por favor, desactiva AdBlock 🥺", ab_text: "Este sitio es gratuito gracias a los anuncios. ¡Por favor, añádenos a tu lista blanca para apoyar al autor!", ab_continue: "Continuar con AdBlock"
+            },
+            pt: {
+                title: "PixelShift — Conversor", subtitle: "Sua faca suíça", dropzone: "✨ Escolher arquivo", select: "Converter para?", btn: "Iniciar", loading: "🔄 Processando...", download: "📥 Baixar",
+                f1_h: "⚡ Rápido", f1_p: "Em segundos.", f2_h: "🔒 Privado", f2_p: "Apenas memória.", f3_h: "💎 Qualidade", f3_p: "Detalhes mantidos.", seo: "<h2>Por que o PixelShift?</h2><p>Conversor potente e grátis.</p>",
+                ab_title: "Por favor, desative o AdBlock 🥺", ab_text: "Este site continua gratuito graças aos anúncios. Por favor, adicione-nos à lista de permissões para apoiar o autor!", ab_continue: "Continuar com AdBlock"
+            },
+            tr: {
+                title: "PixelShift — Dönüştürücü", subtitle: "İsviçre çakınız", dropzone: "✨ Dosya seç", select: "Dönüştür?", btn: "Başlat", loading: "🔄 İşleniyor...", download: "📥 İndir",
+                f1_h: "⚡ Hızlı", f1_p: "Saniyeler içinde.", f2_h: "🔒 Gizli", f2_p: "Sadece bellek.", f3_h: "💎 Kalite", f3_p: "Maksimum detay.", seo: "<h2>Neden PixelShift?</h2><p>Ücretsiz ve güçlü araç.</p>",
+                ab_title: "Lütfen AdBlock'u kapatın 🥺", ab_text: "Bu site reklamlar sayesinde ücretsiz kalıyor. Lütfen yazarı desteklemek için bizi beyaz listeye ekleyin!", ab_continue: "AdBlock ile devam et"
+            },
+            zh: {
+                title: "PixelShift — 文件转换器", subtitle: "多功能工具", dropzone: "✨ 选择文件", select: "转换为？", btn: "开始转换", loading: "🔄 处理中...", download: "📥 下载",
+                f1_h: "⚡ 快速", f1_p: "极速转换。", f2_h: "🔒 安全", f2_p: "内存处理。", f3_h: "💎 高质量", f3_p: "保留细节。", seo: "<h2>为什么选择 PixelShift？</h2><p>强大的免费在线工具。</p>",
+                ab_title: "请禁用广告拦截器 🥺", ab_text: "本网站依靠广告生存并保持免费。请将我们加入白名单以支持作者！", ab_continue: "继续使用广告拦截器"
+            },
+            ja: {
+                title: "PixelShift — コンバーター", subtitle: "万能ツール", dropzone: "✨ ファイルを選択", select: "変換先は？", btn: "開始", loading: "🔄 処理中...", download: "📥 ダウンロード",
+                f1_h: "⚡ 高速", f1_p: "数秒で完了。", f2_h: "🔒 安全", f2_p: "メモリ処理。", f3_h: "💎 高品質", f3_p: "詳細を保持。", seo: "<h2>PixelShift が選ばれる理由</h2><p>無料で強力なツール。</p>",
+                ab_title: "AdBlockを無効にしてください 🥺", ab_text: "このサイトは広告のおかげで無料で運営されています。作者を支援するためにホワイトリストに追加してください！", ab_continue: "AdBlockを有効にしたまま続ける"
+            }
         };
 
         function applyLanguage() {
             let userLang = navigator.language.substring(0, 2);
-            if (!translations[userLang]) userLang = 'en';
+            if (!translations[userLang]) userLang = 'en'; // Если языка нет, будет английский (и русский, и украинский теперь есть в словаре)
+            
             const t = translations[userLang];
             document.title = t.title;
             document.getElementById('t-subtitle').textContent = t.subtitle;
@@ -129,12 +209,50 @@
             document.getElementById('loading').textContent = t.loading;
             document.getElementById('download-link').textContent = t.download;
             document.getElementById('t-seo').innerHTML = t.seo;
+            
+            // Перевод для AdBlock модалки
+            document.getElementById('t-ab-title').textContent = t.ab_title;
+            document.getElementById('t-ab-text').textContent = t.ab_text;
+            document.getElementById('t-ab-continue').textContent = t.ab_continue;
+
             document.getElementById('features-list').innerHTML = `
                 <div class="feature-item"><h3>${t.f1_h}</h3><p>${t.f1_p}</p></div>
                 <div class="feature-item"><h3>${t.f2_h}</h3><p>${t.f2_p}</p></div>
                 <div class="feature-item"><h3>${t.f3_h}</h3><p>${t.f3_p}</p></div>`;
         }
         applyLanguage();
+
+        // --- ЛОГИКА АНТИ-ADBLOCK ---
+        function checkAdBlock() {
+            // Создаем невидимую приманку для блокировщика
+            let fakeAd = document.createElement("div");
+            fakeAd.className = "ad-banner ad adsbox doubleclick sponsor";
+            fakeAd.style.display = "block";
+            fakeAd.style.position = "absolute";
+            fakeAd.style.top = "-9999px";
+            document.body.appendChild(fakeAd);
+
+            // Даем блокировщику миллисекунды, чтобы "съесть" приманку
+            setTimeout(function() {
+                let isBlocked = fakeAd.offsetHeight === 0 || window.getComputedStyle(fakeAd).display === "none";
+                fakeAd.remove();
+
+                if (isBlocked) {
+                    document.getElementById('adblock-modal').classList.remove('hidden');
+                }
+            }, 300);
+        }
+
+        // Закрытие окна по крестику или ссылке
+        document.getElementById('adblock-close').addEventListener('click', () => {
+            document.getElementById('adblock-modal').classList.add('hidden');
+        });
+        document.getElementById('t-ab-continue').addEventListener('click', () => {
+            document.getElementById('adblock-modal').classList.add('hidden');
+        });
+
+        // Запускаем проверку при загрузке страницы
+        window.onload = checkAdBlock;  
 
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
