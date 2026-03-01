@@ -96,7 +96,7 @@ async def convert_file(file: UploadFile = File(...), target_format: str = Form(.
 
         output_path = input_path + f"_converted.{target_format}"
 
-        # 1. КОНВЕРТАЦІЯ ЗОБРАЖЕНЬ (Фікс PNG -> JPG прозорість)
+       # 1. КОНВЕРТАЦІЯ ЗОБРАЖЕНЬ (Фікс PNG -> JPG прозорість + фікс назви формату)
         if file_ext in ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'tiff']:
             img = Image.open(input_path)
 
@@ -111,7 +111,13 @@ async def convert_file(file: UploadFile = File(...), target_format: str = Form(.
                 else:
                     img = img.convert("RGB")
             
-            img.save(output_path, format=target_format.upper())
+            # --- ТОТ САМЫЙ ФИКС ---
+            # Pillow не понимает "JPG", ему строго нужен "JPEG"
+            save_format = target_format.upper()
+            if save_format == "JPG":
+                save_format = "JPEG"
+                
+            img.save(output_path, format=save_format)
 
         # 2. КОНВЕРТАЦІЯ ВІДЕО ТА АУДІО
         elif file_ext in ['mp4', 'avi', 'mov', 'mkv', 'webm', 'mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']:
@@ -141,4 +147,5 @@ async def convert_file(file: UploadFile = File(...), target_format: str = Form(.
     except Exception as e:
 
         return JSONResponse(status_code=500, content={"message": f"Ошибка конвертации: {str(e)}"})
+
 
