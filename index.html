@@ -207,27 +207,31 @@
         }
         updateStats();
 
-        // --- ЛОГІКА АНТИ-ADBLOCK ---
+        // --- БРОНЕБОЙНАЯ ЛОГИКА АНТИ-ADBLOCK ---
         function checkAdBlock() {
-            let fakeAd = document.createElement("div");
-            fakeAd.innerHTML = "&nbsp;"; 
-            fakeAd.className = "ad-banner ad adsbox doubleclick sponsor";
-            fakeAd.style.display = "block";
-            fakeAd.style.position = "absolute";
-            fakeAd.style.top = "-9999px";
-            fakeAd.style.height = "10px";
-            fakeAd.style.width = "10px";
-            document.body.appendChild(fakeAd);
-
-            setTimeout(function() {
-                let isBlocked = fakeAd.offsetHeight === 0 || window.getComputedStyle(fakeAd).display === "none";
-                fakeAd.remove();
-
-                if (isBlocked) {
-                    document.getElementById('adblock-modal').classList.remove('hidden');
-                }
-            }, 300);
+            // Создаем запрос к самому популярному рекламному скрипту в мире
+            let testScript = document.createElement('script');
+            testScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js";
+            
+            // Если AdBlock блокирует загрузку скрипта, срабатывает onerror
+            testScript.onerror = function() {
+                document.getElementById('adblock-modal').classList.remove('hidden');
+            };
+            
+            // Пытаемся добавить скрипт на страницу (AdBlock ударит по нему)
+            document.body.appendChild(testScript);
         }
+
+        // Кнопки закрытия окна
+        document.getElementById('adblock-close').addEventListener('click', () => { 
+            document.getElementById('adblock-modal').classList.add('hidden'); 
+        });
+        document.getElementById('t-ab-continue').addEventListener('click', () => { 
+            document.getElementById('adblock-modal').classList.add('hidden'); 
+        });
+        
+        // Запускаем через секунду после загрузки, чтобы дать время AdBlock'у сработать
+        window.setTimeout(checkAdBlock, 1000);
 
         document.getElementById('adblock-close').addEventListener('click', () => { document.getElementById('adblock-modal').classList.add('hidden'); });
         document.getElementById('t-ab-continue').addEventListener('click', () => { document.getElementById('adblock-modal').classList.add('hidden'); });
@@ -295,4 +299,5 @@
 
     <script src="https://pl28817385.effectivegatecpm.com/ff/5f/df/ff5fdfd8904e09738a1c8b73980c4030.js"></script>
 </body>
+
 </html>
