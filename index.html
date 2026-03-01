@@ -8,6 +8,7 @@
       gtag('js', new Date());
       gtag('config', 'G-TM7PFGCE4L');
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -100,7 +101,7 @@
         <div class="file-upload" id="drop-zone">
             <p id="file-name" style="font-size: 18px;">✨ Drop your file here or click to browse</p>
             <p id="file-size-info" style="color: #666; margin-top: 10px;" class="hidden"></p>
-            <input type="file" id="file-input" class="hidden" accept="image/*,video/*,audio/*">
+            <input type="file" id="file-input" class="hidden" accept="image/*,video/*,audio/*" multiple>
         </div>
 
         <div class="controls">
@@ -273,7 +274,7 @@
         document.getElementById('t-ab-continue').addEventListener('click', () => { document.getElementById('adblock-modal').classList.add('hidden'); });
         window.onload = checkAdBlock;
 
-        // --- ЛОГІКА КОНВЕРТАЦІЇ ---
+        // --- ЛОГІКА КОНВЕРТАЦІЇ ТА КОНФЕТТІ ---
         const fileInput = document.getElementById('file-input');
         const dropZone = document.getElementById('drop-zone');
         const fileNameDisplay = document.getElementById('file-name');
@@ -285,28 +286,42 @@
         const downloadLink = document.getElementById('download-link');
         const errorDiv = document.getElementById('error');
 
+        let selectedFiles = []; // Масив для зберігання кількох файлів
+
         ['dragover', 'dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); }));
         dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
         dropZone.addEventListener('drop', ev => {
             dropZone.classList.remove('dragover');
-            if (ev.dataTransfer.files.length > 0) { fileInput.files = ev.dataTransfer.files; handleFileSelect(ev.dataTransfer.files[0]); }
+            if (ev.dataTransfer.files.length > 0) handleFilesSelect(ev.dataTransfer.files);
         });
         dropZone.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', () => { if(fileInput.files[0]) handleFileSelect(fileInput.files[0]); });
+        fileInput.addEventListener('change', () => { if(fileInput.files.length > 0) handleFilesSelect(fileInput.files); });
 
         function formatBytes(b) { if (b === 0) return '0 Bytes'; const i = Math.floor(Math.log(b) / Math.log(1024)); return (b / Math.pow(1024, i)).toFixed(2) + ' ' + ['Bytes', 'KB', 'MB', 'GB'][i]; }
 
-        async function handleFileSelect(file) {
-            const ext = file.name.split('.').pop().toUpperCase();
-            fileNameDisplay.textContent = `📄 ${file.name}`;
+        async function handleFilesSelect(files) {
+            // Обмежуємо кількість файлів для безкоштовного сервера, щоб він не завис
+            const MAX_FILES = 10;
+            selectedFiles = Array.from(files).slice(0, MAX_FILES); 
+
+            if (selectedFiles.length === 1) {
+                fileNameDisplay.textContent = `📄 ${selectedFiles[0].name}`;
+                fileSizeInfo.textContent = formatBytes(selectedFiles[0].size);
+            } else {
+                fileNameDisplay.textContent = `📄 Вибрано файлів: ${selectedFiles.length} (Макс: ${MAX_FILES})`;
+                const totalSize = selectedFiles.reduce((acc, f) => acc + f.size, 0);
+                fileSizeInfo.textContent = `Загальний розмір: ${formatBytes(totalSize)}`;
+            }
+            
             fileNameDisplay.style.color = "#00cc66";
-            fileSizeInfo.textContent = formatBytes(file.size);
             fileSizeInfo.classList.remove('hidden');
             resultDiv.classList.add('hidden');
             errorDiv.classList.add('hidden');
 
-            const res = await fetch(`/api/get-allowed-formats?filename=${encodeURIComponent(file.name)}`);
+            // Отримуємо доступні формати на основі ПЕРШОГО файлу
+            const ext = selectedFiles[0].name.split('.').pop().toUpperCase();
+            const res = await fetch(`/api/get-allowed-formats?filename=${encodeURIComponent(selectedFiles[0].name)}`);
             const data = await res.json();
             formatSelect.innerHTML = "";
             data.formats.forEach(fmt => {
@@ -317,17 +332,41 @@
         }
 
         convertBtn.addEventListener('click', async () => {
-            if (!fileInput.files[0] || !formatSelect.value) return;
-            const formData = new FormData(); formData.append("file", fileInput.files[0]); formData.append("target_format", formatSelect.value);
+            if (selectedFiles.length === 0 || !formatSelect.value) return;
+            
+            const formData = new FormData(); 
+            // Додаємо всі вибрані файли у FormData під одним ключем "files"
+            selectedFiles.forEach(file => {
+                formData.append("files", file);
+            });
+            formData.append("target_format", formatSelect.value);
+            
             loadingDiv.classList.remove('hidden'); resultDiv.classList.add('hidden'); errorDiv.classList.add('hidden'); convertBtn.disabled = true;
             try {
                 const response = await fetch('/api/convert', { method: 'POST', body: formData });
-                if (!response.ok) throw new Error("Conversion failed");
+                if (!response.ok) throw new Error("Помилка конвертації. Можливо, файл занадто великий.");
+                
                 const blob = await response.blob();
                 downloadLink.href = URL.createObjectURL(blob);
-                downloadLink.download = `pixelshift_${fileInput.files[0].name.split('.')[0]}.${formatSelect.value.toLowerCase()}`;
+                
+                // Якщо файл один - віддаємо його, якщо кілька - віддаємо ZIP архів
+                if (selectedFiles.length === 1) {
+                    downloadLink.download = `pixelshift_${selectedFiles[0].name.split('.')[0]}.${formatSelect.value.toLowerCase()}`;
+                } else {
+                    downloadLink.download = `pixelshift_batch_${formatSelect.value.toLowerCase()}.zip`;
+                }
+                
                 resultDiv.classList.remove('hidden');
-                updateStats(); // Оновлюємо лічильник одразу після успіху
+                updateStats(); // Оновлюємо лічильник
+                
+                // 🔥 ЗАПУСКАЄМО КОНФЕТТІ 🔥
+                confetti({
+                    particleCount: 150,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#ff3366', '#00cc66', '#ffffff']
+                });
+
             } catch (err) { errorDiv.textContent = err.message; errorDiv.classList.remove('hidden'); }
             finally { loadingDiv.classList.add('hidden'); convertBtn.disabled = false; }
         });
@@ -337,4 +376,5 @@
 </body>
 
 </html>
+
 
