@@ -1,41 +1,44 @@
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
-from fastapi.responses import StreamingResponse, JSONResponse, Response, PlainTextResponse
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, File, UploadFile, Form, Response
+from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse
 from PIL import Image
-import io
+import tempfile
 import os
-
-# НОВЫЙ СПОСОБ ИМПОРТА ДЛЯ MOVIEPY 3.0+
-try:
-    from moviepy import VideoFileClip, AudioFileClip
-except ImportError:
-    # Если вдруг стоит совсем старая версия
-    from moviepy.editor import VideoFileClip, AudioFileClip
+import psycopg2
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-CONVERSION_MAP = {
-    "image": ["PNG", "JPG", "WEBP", "GIF", "PDF", "BMP"],
-    "video": ["MP4", "MP3", "GIF", "MOV", "AVI"],
-    "audio": ["MP3", "WAV", "OGG", "M4A"]
-}
+# --- БАЗА ДАНИХ SUPABASE ---
+# Встав свій пароль замість [ТВОЙ_ПАРОЛЬ]
+DB_URL = "postgresql://postgres:[ТВОЙ_ПАРОЛЬ]@db.cydpnrzlsszzfohlcvjs.supabase.co:5432/postgres"
 
-def get_file_category(filename: str):
-    ext = filename.split(".")[-1].lower()
-    if ext in ["jpg", "jpeg", "png", "webp", "bmp"]: return "image"
-    if ext in ["mp4", "mov", "avi", "mkv"]: return "video"
-    if ext in ["mp3", "wav", "ogg", "m4a", "flac"]: return "audio"
-    return None
+def get_total_conversions():
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT count FROM stats WHERE id = 1;")
+        result = cur.fetchone()
+        cur.close()
+        conn.close()
+        return result[0] if result else 0
+    except Exception as e:
+        print("Ошибка БД:", e)
+        return 0
 
-@app.get("/api/get-allowed-formats")
-async def get_formats(filename: str):
-    category = get_file_category(filename)
-    return JSONResponse({"formats": CONVERSION_MAP.get(category, [])})
+def increment_conversions():
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        cur.execute("UPDATE stats SET count = count + 1 WHERE id = 1 RETURNING count;")
+        result = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return result[0] if result else 0
+    except Exception as e:
+        print("Ошибка БД:", e)
+        return 0
 
-
-# --- SEO: Robots.txt ---
+# --- SEO РОУТИ ---
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def get_robots_txt():
     content = """User-agent: *
@@ -44,7 +47,6 @@ Sitemap: https://pixelshift-yz4a.onrender.com/sitemap.xml
 """
     return content
 
-# --- SEO: Sitemap.xml ---
 @app.get("/sitemap.xml")
 async def get_sitemap():
     xml_content = """<?xml version="1.0" encoding="UTF-8"?>
@@ -58,64 +60,75 @@ async def get_sitemap():
 </urlset>"""
     return Response(content=xml_content, media_type="application/xml")
 
+# --- API ---
+@app.get("/api/get-allowed-formats")
+async def get_allowed_formats(filename: str):
+    ext = filename.split('.')[-1].lower()
+    if ext in ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'tiff']:
+        return {"formats": ["JPG", "PNG", "WEBP", "BMP", "GIF", "TIFF", "PDF"]}
+    elif ext in ['mp4', 'avi', 'mov', 'mkv', 'webm']:
+        return {"formats": ["MP4", "AVI", "MOV", "MKV", "WEBM", "MP3", "WAV", "OGG"]}
+    elif ext in ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']:
+        return {"formats": ["MP3", "WAV", "OGG", "FLAC", "AAC"]}
+    return {"formats": []}
+
+@app.get("/api/stats")
+async def get_stats():
+    return {"total": get_total_conversions()}
+
 @app.post("/api/convert")
 async def convert_file(file: UploadFile = File(...), target_format: str = Form(...)):
-    target_format = target_format.upper()
-    category = get_file_category(file.filename)
-    
-    temp_input = f"temp_in_{file.filename}"
-    temp_output = f"temp_out.{target_format.lower()}"
-    
     try:
-        content = await file.read()
-        
-        if category == "image":
-            img = Image.open(io.BytesIO(content))
-            if target_format in ["JPG", "JPEG"] and img.mode in ("RGBA", "P"):
-                img = img.convert("RGB")
-            buf = io.BytesIO()
-            img.save(buf, format="PDF" if target_format == "PDF" else target_format)
-            buf.seek(0)
-            return StreamingResponse(buf, media_type="application/octet-stream")
+        file_ext = file.filename.split('.')[-1].lower()
+        target_format = target_format.lower()
 
-        # Для видео и аудио пишем временный файл
-        with open(temp_input, "wb") as f:
-            f.write(content)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as temp_in:
+            temp_in.write(await file.read())
+            input_path = temp_in.name
 
-        if category == "video":
-            clip = VideoFileClip(temp_input)
-            if target_format == "MP3":
-                clip.audio.write_audiofile(temp_output, logger=None)
-            elif target_format == "GIF":
-                # Сжимаем, чтобы не зависло
-                clip.resized(width=480).write_gif(temp_output, fps=10, logger=None)
+        output_path = input_path + f"_converted.{target_format}"
+
+        # 1. КОНВЕРТАЦІЯ ЗОБРАЖЕНЬ (Фікс PNG -> JPG прозорість)
+        if file_ext in ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'tiff']:
+            img = Image.open(input_path)
+
+            if target_format in ["jpg", "jpeg", "pdf"]:
+                if img.mode in ("RGBA", "P", "LA"):
+                    background = Image.new("RGB", img.size, (255, 255, 255))
+                    if img.mode in ("RGBA", "LA"):
+                        background.paste(img, mask=img.split()[-1])
+                    else:
+                        background.paste(img)
+                    img = background
+                else:
+                    img = img.convert("RGB")
+            
+            img.save(output_path, format=target_format.upper())
+
+        # 2. КОНВЕРТАЦІЯ ВІДЕО ТА АУДІО
+        elif file_ext in ['mp4', 'avi', 'mov', 'mkv', 'webm', 'mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']:
+            from moviepy.editor import VideoFileClip, AudioFileClip
+            
+            if file_ext in ['mp4', 'avi', 'mov', 'mkv', 'webm'] and target_format in ['mp3', 'wav', 'ogg', 'flac', 'aac']:
+                clip = VideoFileClip(input_path)
+                clip.audio.write_audiofile(output_path)
+                clip.close()
+            elif file_ext in ['mp4', 'avi', 'mov', 'mkv', 'webm']:
+                clip = VideoFileClip(input_path)
+                clip.write_videofile(output_path, codec="libx264")
+                clip.close()
             else:
-                clip.write_videofile(temp_output, codec="libx264", logger=None)
-            clip.close()
+                clip = AudioFileClip(input_path)
+                clip.write_audiofile(output_path)
+                clip.close()
+        else:
+            return JSONResponse(status_code=400, content={"message": "Формат не поддерживается"})
 
-        elif category == "audio":
-            audio = AudioFileClip(temp_input)
-            audio.write_audiofile(temp_output, logger=None)
-            audio.close()
+        # 3. ФІНАЛ: ЛІЧИЛЬНИК І ВІДПРАВЛЕННЯ
+        increment_conversions()
 
-        with open(temp_output, "rb") as f:
-            result_data = f.read()
-        
-        return StreamingResponse(io.BytesIO(result_data), media_type="application/octet-stream")
+        new_filename = f"pixelshift_{file.filename.split('.')[0]}.{target_format}"
+        return FileResponse(output_path, filename=new_filename)
 
     except Exception as e:
-        print(f"ОШИБКА: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        # Чистим за собой
-        for f in [temp_input, temp_output]:
-            if os.path.exists(f):
-                try: os.remove(f)
-                except: pass
-
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
-
-if __name__ == "__main__":
-    import uvicorn
-    print(">>> СЕРВЕР ЗАПУСКАЕТСЯ НА http://127.0.0.1:8000")
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+        return JSONResponse(status_code=500, content={"message": f"Ошибка конвертации: {str(e)}"})

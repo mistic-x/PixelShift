@@ -3,3 +3,4 @@ uvicorn
 python-multipart
 Pillow
 moviepy
+psycopg2-binary
