@@ -9,7 +9,7 @@ app = FastAPI()
 
 # --- БАЗА ДАНИХ SUPABASE ---
 # Встав свій пароль замість [ТВОЙ_ПАРОЛЬ]
-DB_URL = "postgresql://postgres:[ТВОЙ_ПАРОЛЬ]@db.cydpnrzlsszzfohlcvjs.supabase.co:5432/postgres"
+DB_URL = "postgresql://postgres:EpsteinfuckNigger1@db.cydpnrzlsszzfohlcvjs.supabase.co:5432/postgres"
 
 def get_total_conversions():
     try:
@@ -46,7 +46,15 @@ Allow: /
 Sitemap: https://pixelshift-yz4a.onrender.com/sitemap.xml
 """
     return content
+# --- ГЛАВНАЯ СТРАНИЦА И ИКОНКА ---
+@app.get("/")
+async def read_root():
+    return FileResponse("index.html")
 
+@app.get("/favicon.png")
+async def get_favicon():
+    return FileResponse("favicon.png")
+    
 @app.get("/sitemap.xml")
 async def get_sitemap():
     xml_content = """<?xml version="1.0" encoding="UTF-8"?>
@@ -131,4 +139,5 @@ async def convert_file(file: UploadFile = File(...), target_format: str = Form(.
         return FileResponse(output_path, filename=new_filename)
 
     except Exception as e:
+
         return JSONResponse(status_code=500, content={"message": f"Ошибка конвертации: {str(e)}"})
