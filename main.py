@@ -9,7 +9,7 @@ app = FastAPI()
 
 # --- БАЗА ДАНИХ SUPABASE ---
 # Встав свій пароль замість [ТВОЙ_ПАРОЛЬ]
-DB_URL = "postgresql://postgres:EpsteinfuckNigger1@db.cydpnrzlsszzfohlcvjs.supabase.co:5432/postgres"
+DB_URL = "postgresql://postgres.cydpnrzlsszzfohlcvjs:EpsteinfuckNigger1@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"
 
 def get_total_conversions():
     try:
@@ -141,3 +141,4 @@ async def convert_file(file: UploadFile = File(...), target_format: str = Form(.
     except Exception as e:
 
         return JSONResponse(status_code=500, content={"message": f"Ошибка конвертации: {str(e)}"})
+
