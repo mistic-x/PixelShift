@@ -300,10 +300,24 @@
 
         function formatBytes(b) { if (b === 0) return '0 Bytes'; const i = Math.floor(Math.log(b) / Math.log(1024)); return (b / Math.pow(1024, i)).toFixed(2) + ' ' + ['Bytes', 'KB', 'MB', 'GB'][i]; }
 
-        async function handleFilesSelect(files) {
-            // Обмежуємо кількість файлів для безкоштовного сервера, щоб він не завис
+       async function handleFilesSelect(files) {
             const MAX_FILES = 10;
+            const MAX_SIZE_MB = 200; // 🔥 НОВЫЙ ЛИМИТ: 200 Мегабайт!
+            const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
             selectedFiles = Array.from(files).slice(0, MAX_FILES); 
+
+            // Перевірка на гігантські файли
+            const oversizedFiles = selectedFiles.filter(f => f.size > MAX_SIZE_BYTES);
+            if (oversizedFiles.length > 0) {
+                errorDiv.textContent = `Error: File must not be higher than ${MAX_SIZE_MB} MB! `;
+                errorDiv.classList.remove('hidden');
+                resultDiv.classList.add('hidden');
+                fileSizeInfo.classList.add('hidden');
+                fileNameDisplay.textContent = "✨ Choose file or drag it here";
+                selectedFiles = []; 
+                return; 
+            }
 
             if (selectedFiles.length === 1) {
                 fileNameDisplay.textContent = `📄 ${selectedFiles[0].name}`;
@@ -376,5 +390,6 @@
 </body>
 
 </html>
+
 
 
