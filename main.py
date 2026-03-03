@@ -1,11 +1,14 @@
 from fastapi import FastAPI, File, UploadFile, Form, Response
 from fastapi.responses import JSONResponse, PlainTextResponse, FileResponse
 from PIL import Image
-from typing import List # <--- ДОДАНО ДЛЯ МАСОВИХ ФАЙЛІВ
+from typing import List
 import tempfile
 import os
 import psycopg2
-import zipfile # <--- ДОДАНО ДЛЯ СТВОРЕННЯ АРХІВІВ
+import zipfile
+import asyncio             # <-- Новый
+import subprocess          # <-- Новый
+import imageio_ffmpeg      # <-- Новый
 
 app = FastAPI()
 
@@ -90,9 +93,8 @@ async def get_stats():
 async def convert_files(files: List[UploadFile] = File(...), target_format: str = Form(...)):
     try:
         target_format = target_format.lower()
-        converted_files = [] # Сюди будемо складати готові файли
+        converted_files = [] 
 
-        # Перебираємо всі завантажені файли
         for file in files:
             file_ext = file.filename.split('.')[-1].lower()
             
@@ -121,26 +123,35 @@ async def convert_files(files: List[UploadFile] = File(...), target_format: str 
                 if save_format == "JPG": save_format = "JPEG"
                 img.save(output_path, format=save_format)
 
-            # 2. КОНВЕРТАЦІЯ ВІДЕО ТА АУДІО
+            # 2. КОНВЕРТАЦІЯ ВІДЕО ТА АУДІО (Хардкорний FFmpeg)
             elif file_ext in ['mp4', 'avi', 'mov', 'mkv', 'webm', 'mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']:
-                from moviepy.editor import VideoFileClip, AudioFileClip
                 
-                if file_ext in ['mp4', 'avi', 'mov', 'mkv', 'webm'] and target_format in ['mp3', 'wav', 'ogg', 'flac', 'aac']:
-                    clip = VideoFileClip(input_path)
-                    clip.audio.write_audiofile(output_path)
-                    clip.close()
-                elif file_ext in ['mp4', 'avi', 'mov', 'mkv', 'webm']:
-                    clip = VideoFileClip(input_path)
-                    clip.write_videofile(output_path, codec="libx264")
-                    clip.close()
-                else:
-                    clip = AudioFileClip(input_path)
-                    clip.write_audiofile(output_path)
-                    clip.close()
-            else:
-                continue # Якщо формат невідомий, просто пропускаємо цей файл
+                ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+                command = [ffmpeg_exe, '-i', input_path, '-y']
+                
+                if target_format == 'mp4':
+                    command.extend(['-c:v', 'libx264', '-preset', 'fast', '-crf', '28', '-c:a', 'aac'])
+                elif target_format in ['mp3', 'wav', 'ogg', 'flac', 'aac']:
+                    command.append('-vn') 
+                    if target_format == 'mp3':
+                        command.extend(['-acodec', 'libmp3lame', '-q:a', '2']) 
+                        
+                command.append(output_path)
 
-            # Збільшуємо лічильник для КОЖНОГО файлу!
+                process = await asyncio.create_subprocess_exec(
+                    *command,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                stdout, stderr = await process.communicate()
+
+                if process.returncode != 0:
+                    print(f"Помилка FFmpeg: {stderr.decode()}")
+                    raise Exception("Файл пошкоджено або формат не підтримується.")
+
+            else:
+                continue 
+
             increment_conversions()
             
             new_filename = f"pixelshift_{file.filename.split('.')[0]}.{target_format}"
@@ -149,11 +160,9 @@ async def convert_files(files: List[UploadFile] = File(...), target_format: str 
         if not converted_files:
             return JSONResponse(status_code=400, content={"message": "Не вдалося конвертувати жоден файл"})
 
-        # Якщо файл один - віддаємо як є
         if len(converted_files) == 1:
             return FileResponse(converted_files[0]["path"], filename=converted_files[0]["name"])
         
-        # Якщо файлів багато - ПАКУЄМО В ZIP!
         zip_path = tempfile.mktemp(suffix=".zip")
         with zipfile.ZipFile(zip_path, 'w') as zipf:
             for cf in converted_files:
@@ -162,6 +171,7 @@ async def convert_files(files: List[UploadFile] = File(...), target_format: str 
         return FileResponse(zip_path, filename=f"pixelshift_batch_{target_format}.zip")
 
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": f"Помилка: {str(e)}"})
+        return JSONResponse(status_code=500, content={"message": f"Error: {str(e)}"})
+
 
 
